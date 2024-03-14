@@ -1,6 +1,6 @@
 **DS_Store
 **__pycache__
 .ipynb_checkpoints
-**/runs/*
-**/.ipynb_checkpoints
-**/datas/*
+*/runs/*
+*/.ipynb_checkpoints
+*/datas/*
