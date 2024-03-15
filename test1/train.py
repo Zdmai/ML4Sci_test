@@ -34,7 +34,7 @@ config = {
     'n_classes': 1,
     'base_channels': 3,
     'input_channels': 2,
-    'input_shape': (1, 2, 32, 32),
+    'input_shape': (1, 32, 32, 2),
     'depth': 4,
     'block_type': 'basic',
     'batch_size': 2048,
@@ -56,6 +56,7 @@ x_train, y_train, x_valid, y_valid = X[train_ind], y[train_ind], X[valid_ind], y
 train_dataset, valid_dataset = EPData(x_train, y_train), \
                                EPData(x_valid, y_valid)
 
+print(train_dataset[0][0].shape, type(train_dataset[0][0]))
 
 # Pytorch data loader loads pytorch dataset into batches.
 train_loader = DataLoader(train_dataset, batch_size=config['batch_size'], shuffle=True, pin_memory=True)
@@ -66,7 +67,7 @@ valid_loader = DataLoader(valid_dataset, batch_size=config['batch_size'], shuffl
 
 
 
-#%%
+#
 model = EPNet(config)
 
 

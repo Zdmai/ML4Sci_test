@@ -10,7 +10,7 @@ class BasicBlock(nn.Module):
         self.conv1 = nn.Conv2d(in_channels, out_channels, 1, bias=False)
         self.bn1 = nn.BatchNorm2d(out_channels)
         self.conv2 = nn.Conv2d(out_channels, out_channels, 3, bias=False, padding=0)
-        # self.bn2 = nn.BatchNorm2d(out_channels)
+        self.bn2 = nn.BatchNorm2d(out_channels)
         
         self.shortcut = nn.Sequential()
         if in_channels != out_channels:
@@ -45,7 +45,9 @@ class EPNet(nn.Module):
         )
     
     def _forward_test(self, x):
+        print("before premute: ", x.shape)
         x = x.permute(0, 3, 2, 1)
+        print("after  premute: ", x.shape)
         x = self.stage1(x)
         x = self.stage2(x)
         # x = self.stage3(x)
