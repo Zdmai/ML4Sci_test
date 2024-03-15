@@ -13,6 +13,7 @@ from model import EPNet
 from data import EPData
 from utils import data_read, download, train_valid_split
 
+
 device = 'cuda' if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_available() else 'cpu'
 
 
@@ -43,7 +44,10 @@ config = {
 }
 
 
-X, y, length = data_read(electron, photon)
+download(electron_url, dir, electron)
+download(photon_url, dir, photon)
+
+X, y, length = data_read(dir, electron, photon)
 
 train_ind, valid_ind = train_valid_split(length, config['valid_ratio'], config['seed'])
 
@@ -76,7 +80,7 @@ def train(model, train_loader, Valid_loader, config, device):
 
     optimizer = torch.optim.Adam(model.parameters(), lr=0.03, weight_decay=1e-5)
     
-    writer = SummaryWriter() # Writer of tensoboard.
+    writer = SummaryWriter() # Writer of tensorboard.
     if not os.path.isdir('./models'):
         os.mkdir('./models')
     
@@ -93,7 +97,7 @@ def train(model, train_loader, Valid_loader, config, device):
         for x, y in train_pbar:
             # print(x.dtype, y.dtype)
             optimizer.zero_grad()               # Set gradient to zero.
-            x, y = x.to(device), y.type(torch.LongTensor)   .to(device)   # Move your data to device.
+            x, y = x.to(device), y.type(torch.LongTensor).to(device)   # Move your data to device.
             pred = model(x)
             loss = ll(pred, y)
             # print(loss.dtype)
@@ -143,4 +147,6 @@ def train(model, train_loader, Valid_loader, config, device):
 
 if __name__ == '__main__':
     train(model, train_loader, valid_loader, config, device)
+    print('\x1b[31mrun tendorboard.....\033[m')
+    os.system('tensorboard --logdir=./runs/')
 
