@@ -21,9 +21,8 @@ class BasicBlock(nn.Module):
     def forward(self, x):
         y = F.relu(self.bn1(self.conv1(x)), inplace=True)
         y = F.relu(self.bn2(self.conv2(y)), inplace=True)
-        print(y.shape, x.shape)
         y = y + self.shortcut(x)
-        # y = F.relu(y, inplace=True)
+        y = F.relu(y, inplace=True)
         return y
 
 
@@ -45,12 +44,12 @@ class EPNet(nn.Module):
         )
     
     def _forward_test(self, x):
-        print("before premute: ", x.shape)
+        # print("before premute: ", x.shape)
         x = x.permute(0, 3, 2, 1)
-        print("after  premute: ", x.shape)
+        # print("after  premute: ", x.shape)
         x = self.stage1(x)
         x = self.stage2(x)
-        # x = self.stage3(x)
+        x = self.stage3(x)
         x = F.adaptive_avg_pool2d(x, output_size=1)
         # print("average pool:", x.shape)
         return x

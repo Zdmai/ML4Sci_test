@@ -31,7 +31,7 @@ config = {
     'select_all': True,   # Whether to use all features.
     'valid_ratio': 0.2,   # validation_size = train_size * valid_ratio
     'n_epochs': 300,     # Number of epochs.
-    'n_classes': 1,
+    'n_classes': 2,
     'base_channels': 3,
     'input_channels': 2,
     'input_shape': (1, 32, 32, 2),
@@ -65,8 +65,6 @@ valid_loader = DataLoader(valid_dataset, batch_size=config['batch_size'], shuffl
 # test_loader = DataLoader(test_dataset, batch_size=config['batch_size'], shuffle=False, pin_memory=True)
 
 
-
-
 #
 model = EPNet(config)
 
@@ -98,10 +96,10 @@ def train(model, train_loader, Valid_loader, config, device):
         for x, y in train_pbar:
             # print(x.dtype, y.dtype)
             optimizer.zero_grad()               # Set gradient to zero.
-            x, y = x.to(device), y.type(torch.LongTensor).to(device)   # Move your data to device.
+            x, y = x.to(device), y.to(device)   # Move your data to device.
             pred = model(x)
             loss = ll(pred, y)
-            # print(loss.dtype)
+            # print("pred argmax:", torch.sum(torch.argmax(pred, dim=1) == torch.argmax(y, dim=1)))
             
             loss.backward()                     # Compute gradient(backpropagation).
             optimizer.step()                    # Update parameters.
@@ -116,20 +114,46 @@ def train(model, train_loader, Valid_loader, config, device):
 
         writer.add_scalar('Loss/train', mean_train_loss, step)
 
+        #####################
+
+        # Valid
+
+        #####################
         model.eval() # Set your model to evaluation mode.
+
+
+        right = []
         loss_record = []
         for x, y in valid_loader:
+
             x, y = x.to(device), y.to(device)
             with torch.no_grad():
                 pred = model(x)
                 # print(f'pred.shape = {pred.shape} y.shape = {y.shape}')
                 loss = ll(pred, y)
+            right.append(torch.sum(torch.argmax(pred, dim=1) == torch.argmax(y, dim=1)))
+
+            train_pbar.set_description(f'Epoch [{epoch+1}/{n_epochs}]')
+            train_pbar.set_postfix({'acc': right[-1]/config['batch_size']})
+
 
             loss_record.append(loss.item())
 
+        mean_valid_acc = sum(right) / (len(right) * config['batch_size'])
         mean_valid_loss = sum(loss_record)/len(loss_record)
-        print(f'Epoch [{epoch+1}/{n_epochs}]: Train loss: {mean_train_loss:.4f}, Valid loss: {mean_valid_loss:.4f}')
+        print(f'Epoch [{epoch+1}/{n_epochs}]: Train loss: {mean_train_loss:.4f}, Valid loss: {mean_valid_loss:.4f}, Accary: {mean_valid_acc:4f}%')
+
+        writer.add_scalar('Acc/valid', mean_valid_acc, step)
         writer.add_scalar('Loss/valid', mean_valid_loss, step)
+
+        # adjudge the learning_rate
+
+        if step % 100 == 0:
+            for param_group in optimizer.param_groups:
+                print("before adjest lr: ", param_group['lr'])
+                param_group["lr"] /= 2
+                print("after adjest  lr: ", param_group['lr'])
+
 
         if mean_valid_loss < best_loss:
             best_loss = mean_valid_loss
