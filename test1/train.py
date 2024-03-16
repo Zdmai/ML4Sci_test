@@ -114,6 +114,8 @@ def train(model, train_loader, Valid_loader, config, device):
 
         writer.add_scalar('Loss/train', mean_train_loss, step)
 
+
+
         #####################
 
         # Valid

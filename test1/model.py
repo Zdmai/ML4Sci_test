@@ -7,14 +7,14 @@ import torch.nn.functional as F
 class BasicBlock(nn.Module):
     def __init__(self, in_channels, out_channels):
         super(BasicBlock, self).__init__()
-        self.conv1 = nn.Conv2d(in_channels, out_channels, 1, bias=False)
+        self.conv1 = nn.Conv2d(in_channels, out_channels, 3, bias=False, padding='same')
         self.bn1 = nn.BatchNorm2d(out_channels)
-        self.conv2 = nn.Conv2d(out_channels, out_channels, 3, bias=False, padding=0)
+        self.conv2 = nn.Conv2d(out_channels, out_channels, 3, bias=False, padding='same')
         self.bn2 = nn.BatchNorm2d(out_channels)
         
         self.shortcut = nn.Sequential()
         if in_channels != out_channels:
-            self.shortcut.add_module('conv', nn.Conv2d(in_channels, out_channels, 3, bias=False, padding=0))
+            self.shortcut.add_module('conv', nn.Conv2d(in_channels, out_channels, 1, bias=False, padding='same'))
             self.shortcut.add_module('bn', nn.BatchNorm2d(out_channels))
         
     
@@ -31,9 +31,10 @@ class EPNet(nn.Module):
         super(EPNet, self).__init__()
         shape = config['input_shape']
         input_channel = config['input_channels']
-        self.stage1 = BasicBlock(input_channel, 32)
-        self.stage2 = BasicBlock(32, 64)
-        self.stage3 = BasicBlock(64, 32)
+        self.conv = nn.Conv2d(input_channel, 32, 5, padding='same')
+        self.stage1 = BasicBlock(32, 64)
+        self.stage2 = BasicBlock(64, 128)
+        self.stage3 = BasicBlock(128, 128)
         with torch.no_grad():
             self.feature = self._forward_test(torch.zeros(shape)).view(-1).shape[0]
         
@@ -47,6 +48,7 @@ class EPNet(nn.Module):
         # print("before premute: ", x.shape)
         x = x.permute(0, 3, 2, 1)
         # print("after  premute: ", x.shape)
+        x = self.conv(x)
         x = self.stage1(x)
         x = self.stage2(x)
         x = self.stage3(x)
