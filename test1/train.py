@@ -37,7 +37,7 @@ config = {
     'input_shape': (1, 32, 32, 2),
     'depth': 4,
     'block_type': 'basic',
-    'batch_size': 2048,
+    'batch_size': 1024,
     'learning_rate': 1e-3,
     'early_stop': 400,    # If model has not improved for this many consecutive epochs, stop training.
     'save_path': './models/model.ckpt'  # Your model will be saved here.

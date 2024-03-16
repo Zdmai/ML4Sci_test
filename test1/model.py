@@ -11,6 +11,7 @@ class BasicBlock(nn.Module):
         self.bn1 = nn.BatchNorm2d(out_channels)
         self.conv2 = nn.Conv2d(out_channels, out_channels, 3, bias=False, padding='same')
         self.bn2 = nn.BatchNorm2d(out_channels)
+        self.dropout = nn.Dropout2d()
         
         self.shortcut = nn.Sequential()
         if in_channels != out_channels:
@@ -23,6 +24,7 @@ class BasicBlock(nn.Module):
         y = F.relu(self.bn2(self.conv2(y)), inplace=True)
         y = y + self.shortcut(x)
         y = F.relu(y, inplace=True)
+        y = self.dropout(y)
         return y
 
 
