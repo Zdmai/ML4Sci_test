@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 from torch.utils.data import Dataset, DataLoader
 
-from model import EPNet
+from res15_new import new_EPNet
 from data import EPData
 from utils import data_read, download, train_valid_split
 
@@ -66,7 +66,7 @@ valid_loader = DataLoader(valid_dataset, batch_size=config['batch_size'], shuffl
 
 
 #
-model = EPNet(config)
+model = new_EPNet(config)
 
 
 # Train
